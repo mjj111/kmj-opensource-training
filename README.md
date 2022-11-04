@@ -1,4 +1,4 @@
-# pyqt_calculator
+# GUI_calculator_using_pyqt
 The simple calculator based on PyQt5
 
 This calculator is based on studyingrabbit's work (https://studyingrabbit.tistory.com/23)
