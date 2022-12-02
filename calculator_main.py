@@ -20,6 +20,9 @@ class Main(QDialog):
         self.solution = QLineEdit("")
 
         ### layout_equation_solution 레이아웃에 수식, 답 위젯을 추가
+        self.number_display = QLineEditText("")
+        self.solution = QLineEditText("0")
+        
         layout_equation_solution.addWidget(self.equation)
         layout_equation_solution.addWidget(self.solution)
 
@@ -75,8 +78,13 @@ class Main(QDialog):
             number_button_dict[number].clicked.connect(lambda state, num=number:
                                                        self.number_button_clicked(num))
             if number > 0:
-                x, y = divmod(number - 1, 3)
-                layout_bottom_first.addWidget(number_button_dict[number], x, y)
+                x, y = int(6/number), (number-1)%3
+                if number == 2:
+                    layout_bottom_first.addWidget(number_button_dict[number], 2, y)
+                elif number == 1:
+                    layout_bottom_first.addWidget(number_button_dict[number], 2, y)
+                else :
+                    layout_bottom_first.addWidget(number_button_dict[number], x, y)
             elif number == 0:
                 layout_bottom_first.addWidget(number_button_dict[number], 3, 1)
 
@@ -100,29 +108,126 @@ class Main(QDialog):
     #################
     ### functions ###
     #################
+        self.operand = 0
+        self.result = 0
+        self.operator = ""
+        self.entry = ""
+        self.temp = ""
+        self.chkop = True
+        self.ce = False
+        self.inputNum = False
+
     def number_button_clicked(self, num):
-        equation = self.equation.text()
-        equation += str(num)
-        self.equation.setText(equation)
+        if self.operator != "":
+            self.solution.setText("")
+        self.temp+=str(num)
+        print(f"num_button {self.ce}  {self.inputNum}  {self.temp}")
+        if self.ce and not self.inputNum and self.chkop:
+            self.equation.setText("")
+            self.entry = self.operand
+            self.inputNum = True
+
+        self.operand = int(self.temp)
+        self.solution.setText(self.temp)
+        self.chkop = True    
 
     def button_operation_clicked(self, operation):
-        equation = self.equation.text()
+        self.entry = "0" if self.entry == "" else self.entry
+        self.temp = "0" if self.temp == "" else self.temp
+        print(operation)
+        if not self.chkop == False and self.operator == "":
+            if operation == "+" :
+                self.result = int(self.entry)+self.operand
+                self.entry = str(self.result)
+            elif operation == "-" :
+                print(self.entry)
+                self.result = self.operand if self.entry == "0" else int(self.entry) - self.operand
+                self.entry = str(self.result)
+            elif operation == "*":
+                self.result = 1*self.operand
+                self.entry = str(self.result)
+        elif not self.chkop == False:
+            if self.operator == "+" :
+                self.result = int(self.entry)+self.operand
+                self.entry = str(self.result)
+            elif self.operator == "-" :
+                print(self.entry)
+                self.result = self.operand if self.entry == "0" else int(self.entry) - self.operand
+                self.entry = str(self.result)
+            elif self.operator == "*":
+                self.result = int(self.entry)*self.operand
+                self.entry = str(self.result)
+
+
+        print(self.entry + " cc " + str(self.operand) + "   " + str(self.result))
+
+        self.operator = operation
+        equation = self.temp if self.equation.text() =="" else self.entry
         equation += operation
         self.equation.setText(equation)
+        self.solution.setText(str(self.result))
+        self.temp = ""
+        self.chkop = False
+
+
 
     def button_equal_clicked(self):
-        equation = self.equation.text()
-        solution = eval(equation)
-        self.solution.setText(str(solution))
+        if self.inputNum:
+            self.temp = self.entry
+            self.entry = str(self.operand)
+            self.operand = int(self.temp)
+            self.temp = "0"
+            self.ce = False
+            self.inputNum = False
+        else:
+            self.ce = False
+        equation = self.entry + self.operator + str(self.operand) + "="
+        self.entry = "0" if self.entry=="" else self.entry
+        if self.operator == "+":
+            self.result = int(self.entry)+self.operand
+        elif self.operator == "-":
+            self.result = int(self.entry)-self.operand
+        elif self.operator == "*":
+            self.result = int(self.entry)*self.operand
+        self.entry = str(self.result)
+        self.equation.setText(equation)
+        self.solution.setText(str(self.result))
+        self.temp = ""
+        self.chkop = False
+        self.ce = True
+
+        print(f"{self.entry} + {self.operator} + {self.operand} + {self.result}")
+
 
     def button_clear_clicked(self):
-        self.equation.setText("")
+        self.operand = 0
+        self.result = 0
+        self.operator = ""
+        self.entry = ""
+        self.temp = ""
+        self.chkop = True
+        self.ce = False
+        self.inputNum = False
         self.solution.setText("")
 
+    def button_clear_entry_clicked(self):
+        self.result = 0
+        self.temp = ""
+        self.entry = "0"
+        self.chkop = True
+        self.ce = True
+        self.equation.setText("")
+        self.solution.setText("0")
+        
     def button_backspace_clicked(self):
-        equation = self.equation.text()
-        equation = equation[:-1]
-        self.equation.setText(equation)
+        if self.chkop and not self.temp == "":
+            self.operand = int(self.operand/10)
+            self.temp = "" if self.operand==0 else str(self.operand)
+            solution = "0" if len(self.solution.text()) == 1 else self.solution.text()[:-1]
+            self.solution.setText(solution)
+        else:
+            self.equation.setText("")
+            self.temp = self.entry
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
