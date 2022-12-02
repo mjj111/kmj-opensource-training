@@ -72,13 +72,13 @@ class Main(QDialog):
         number_button_dict = {}
         for number in range(0, 10):
             number_button_dict[number] = QPushButton(str(number))
-            number_button_dict[number].clicked.connect(lambda state, num = number:
+            number_button_dict[number].clicked.connect(lambda state, num=number:
                                                        self.number_button_clicked(num))
             if number > 0:
                 x, y = divmod(number - 1, 3)
                 layout_bottom_first.addWidget(number_button_dict[number], x, y)
             elif number == 0:
-                layout_bottom_first.addWidget(number_button_dict[number], 3, 1)    
+                layout_bottom_first.addWidget(number_button_dict[number], 3, 1)
 
         ### 소숫점 버튼과 00 버튼을 입력하고 시그널 설정
         button_dot.clicked.connect(lambda state, num = ".": self.number_button_clicked(num))
