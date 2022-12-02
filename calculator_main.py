@@ -31,7 +31,7 @@ class Main(QDialog):
         button_backspace = QPushButton("<=")
         button_clear = QPushButton("C")
         button_clear_entry = QPushButton("CE")
-        button_mod = QPushButton("%")
+        button_per = QPushButtonOperation("%")
         button_reverse = QPushButton("¹/×")
         button_pow = QPushButton("pow")
         button_sqrt = QPushButton("sqrt")
@@ -40,7 +40,7 @@ class Main(QDialog):
         button_negate = QPushButton("⁺/₋")
         button_equal = QPushButton("=")
 
-        layout_top_first.addWidget(button_mod)
+        layout_top_first.addWidget(button_per)
         layout_top_first.addWidget(button_clear_entry)
         layout_top_first.addWidget(button_clear)
         layout_top_first.addWidget(button_backspace)
@@ -56,10 +56,11 @@ class Main(QDialog):
         layout_bottom_second.addWidget(button_equal)
         
         ### 사칙연산 버튼을 클릭했을 때, 각 사칙연산 부호가 수식창에 추가될 수 있도록 시그널 설정
-        button_plus.clicked.connect(lambda state, operation = "+": self.button_operation_clicked(operation))
-        button_minus.clicked.connect(lambda state, operation = "-": self.button_operation_clicked(operation))
-        button_product.clicked.connect(lambda state, operation = "*": self.button_operation_clicked(operation))
-        button_division.clicked.connect(lambda state, operation = "/": self.button_operation_clicked(operation))
+        button_reverse.clicked.connect(self.button_reverse_clicked)
+        button_pow.clicked.connect(self.button_pow_clicked)
+        button_sqrt.clicked.connect(self.button_sqrt_clicked)
+        button_division.clicked.connect(lambda state, operation = "÷": self.button_operation_clicked(operation))
+        button_product.clicked.connect(lambda state, operation = "x": self.button_operation_clicked(operation))
 
 
 
@@ -72,8 +73,7 @@ class Main(QDialog):
         number_button_dict = {}
         for number in range(0, 10):
             number_button_dict[number] = QPushButton(str(number))
-            number_button_dict[number].clicked.connect(lambda state, num=number:
-                                                       self.number_button_clicked(num))
+            number_button_dict[number].clicked.connect(lambda state, num=number: self.number_button_clicked(num))
             if number > 0:
                 x, y = divmod(number - 1, 3)
                 layout_bottom_first.addWidget(number_button_dict[number], x, y)
@@ -100,10 +100,63 @@ class Main(QDialog):
     #################
     ### functions ###
     #################
+        self.operand = 0
+        self.result = 0
+        self.operator = ""
+        self.chkop = True
+        self.inputNum = False
+        self.enter = False
+        self.swap = False
+        self.bs = False
+
+    def is_int(self, n):
+        if abs(n - int(n)) < 0.0000001:
+            return int(n)
+        else:
+            return n
+
     def number_button_clicked(self, num):
-        equation = self.equation.text()
-        equation += str(num)
-        self.equation.setText(equation)
+        if self.inputNum:
+            solution = ""
+            self.inputNum = False
+        elif self.enter:
+            self.entry = self.operand
+            solution = ""
+            self.equation.setText("")
+            self.enter = False
+            self.swap = True
+        else:
+            solution = "" if self.solution.text() == "0" else self.solution.text()
+
+        if num == '.' and solution == "":
+            solution = "0"
+        solution += str(num)
+        self.operand = float(solution)
+        self.solution.setText(solution)
+        self.bs = True
+
+    def calculator(self, op, op2):
+        print("Check!", self.entry, self.operand, self.result)
+        print(str(11111.66666))
+        if self.operand:
+            if op == '+':
+                self.result = self.entry + self.operand
+            elif op == '-':
+                self.result = self.entry - self.operand
+            elif op == '÷':
+                self.entry = 1 if self.entry == 0 else self.entry
+                self.result = self.entry / self.operand
+                print(type(self.result))
+            elif op == 'x':
+                self.entry = 1 if self.entry == 0 else self.entry
+                self.result = self.entry * self.operand
+            else:
+                self.result = float(self.solution.text())
+
+            self.result = self.is_int(self.result)
+            self.equation.setText(str(self.result)+op2)
+            self.solution.setText(str(self.result))
+            self.entry = float(self.solution.text())
 
     def button_operation_clicked(self, operation):
         equation = self.equation.text()
